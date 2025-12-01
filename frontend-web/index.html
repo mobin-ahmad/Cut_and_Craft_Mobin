@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cut & Craft by Zoi Solution</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .blue { background-color: #003087; }
+    .orange { background-color: #D61F2A; }
+    .green { background-color: #28A745; }
+    .lightblue { background-color: #17A2B8; }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans">
+  <div class="min-h-screen blue text-white p-8">
+    <h1 class="text-5xl font-bold text-center mb-4">CUT & CRAFT</h1>
+    <h2 class="text-3xl text-center mb-8">by Zoi Solution – Mobin Bhai Edition</h2>
+
+    <div class="max-w-7xl mx-auto bg-white rounded-lg shadow-2xl overflow-hidden">
+      <!-- Header same as your diagram -->
+      <div class="grid grid-cols-4 text-white text-center text-xl font-bold">
+        <div class="blue py-4">Outlet</div>
+        <div class="lightblue py-4">Inventory/SAP</div>
+        <div class="orange py-4">Candila</div>
+        <div class="green py-4">Stitching Unit</div>
+      </div>
+
+      <!-- Full Flow Diagram (exact same as your photo) -->
+      <div class="p-10 bg-gray-50">
+        <img src="C:\Users\DELL\Desktop\Cut_and_Craft_Mobin\frontend-web\cut-craft-flow-mobin-bhai.jpg" alt="Cut & Craft Full Flow" class="w-full rounded-lg shadow-lg">
+      </div>
+
+      <!-- Live Buttons – click karo aur real backend se status badlega -->
+      <div class="p-10 grid grid-cols-3 gap-6 text-center">
+        <div>
+          <h3 class="text-2xl font-bold blue-text mb-4">Outlet (Lahore)</h3>
+          <button onclick="createOrder()" class="bg-blue-700 hover:bg-blue-800 text-white px-8 py-4 rounded text-xl">Create New Order</button>
+        </div>
+        <div>
+          <h3 class="text-2xl font-bold orange-text mb-4">Candila Admin</h3>
+          <button onclick="approveOrder()" class="bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 rounded text-xl">Approve Material</button>
+        </div>
+        <div>
+          <h3 class="text-2xl font-bold green-text mb-4">Stitching Unit</h3>
+          <button onclick="dispatchOrder()" class="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded text-xl">Dispatch to Outlet</button>
+        </div>
+      </div>
+
+      <div id="status" class="text-center text-2xl font-bold p-8 bg-gray-200"></div>
+    </div>
+  </div>
+
+  <script>
+    let currentOrderId = null;
+
+    async function createOrder() {
+      const res = await fetch('http://127.0.0.1:8000/orders/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          customer_name: "Ahmed Khan",
+          measurements: {chest:40, waist:34, length:42 /* 22 fields */},
+          fabric_code: "COTTON-001",
+          quantity_meters: 4.5,
+          outlet: "Lahore Defence"
+        })
+      });
+      const data = await res.json();
+      currentOrderId = data.id;
+      document.getElementById('status').innerHTML = `<span class="text-green-600">Order Created! ID: ${data.id} → Sent to Candila</span>`;
+    }
+
+    async function approveOrder() {
+      if (!currentOrderId) return alert("Pehle order create karo");
+      await fetch(`http://127.0.0.1:8000/orders/${currentOrderId}/approve`);
+      document.getElementById('status').innerHTML = `<span class="text-orange-600">Material Approved & Issued → Syncing...</span>`;
+      setTimeout(() => document.getElementById('status').innerHTML += `<br><span class="text-green-600">Material Received at Stitching Unit</span>`, 1500);
+    }
+
+    async function dispatchOrder() {
+      if (!currentOrderId) return alert("Pehle order create karo");
+      await fetch(`http://127.0.0.1:8000/orders/${currentOrderId}/dispatch`);
+      document.getElementById('status').innerHTML = `<span class="text-green-600">Suit Completed → Dispatched → Handed Over to Customer!</span>`;
+    }
+  </script>
+</body>
+</html>
